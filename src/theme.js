@@ -20,8 +20,54 @@ const theme = extendTheme({
         secondary: orange
       }
     }
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none'
+        }
+      }
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: theme.palette.primary.main,
+          fontSize: '0.875rem'
+        })
+      }
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: theme.palette.primary.main
+        })
+      }
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: ({ theme }) => {
+          return {
+            color: theme.palette.primary.main,
+            fontSize: '0.875rem',
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.light
+            },
+            '&:hover': {
+              '.MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.primary.main
+              }
+            }
+            // ,
+            // '& fieldset': {
+            //   borderWidth: '1px !important'
+            // }
+          }
+        }
+      }
+    }
   }
-  // ...other properties
+  // ...other propertiesS
 })
 
 export default theme
