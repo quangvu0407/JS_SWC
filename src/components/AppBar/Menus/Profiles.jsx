@@ -32,7 +32,7 @@ const Profiles = () => {
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
         >
-          <Avatar sx={{ width: 32, height: 32 }}
+          <Avatar sx={{ width: 34, height: 34 }}
             alt='quangquang'
             src='https://deviet.vn/wp-content/uploads/2019/04/vuong-quoc-anh.jpg' />
         </IconButton>
