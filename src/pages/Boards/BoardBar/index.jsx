@@ -83,7 +83,9 @@ const BoardBar = () => {
               width: '34px',
               height: '34px',
               fontSize: '16px',
-              color: 'white'
+              color: 'white !important',
+              cursor: 'pointer',
+              '&:first-of-type': { color: '#a4b0be' }
             }
           }}
         >
