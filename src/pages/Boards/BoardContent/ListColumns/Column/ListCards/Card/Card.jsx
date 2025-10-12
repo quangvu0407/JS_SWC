@@ -7,19 +7,39 @@ import AttachmentIcon from '@mui/icons-material/Attachment'
 import ForumIcon from '@mui/icons-material/Forum'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 const Card = ({ card }) => {
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card._id,
+    data: { ...card }
+  })
+
+  const dndKitColumnStyles = {
+    // touchAction: 'none',
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined
+  }
 
   const isShowActions = () => {
     return !!card?.memberIds?.length || !!card?.comments?.length || !!card?.sh?.attachments
   }
 
   return (
-    <MuiCard sx={{
-      cursor: 'pointer',
-      boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
-      overflow: 'unset'
-    }}>
+    <MuiCard
+      ref={setNodeRef}
+      style={dndKitColumnStyles}
+      {...attributes}
+      {...listeners}
+      sx={{
+        cursor: 'pointer',
+        boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
+        overflow: 'unset'
+      }}
+    >
       {card?.cover &&
         <CardMedia
           sx={{ height: 140 }}
