@@ -1,4 +1,4 @@
- - Lập Trình qua dự án thực tế Trello 
+ - Lập Trình qua dự án thực tế Trello part1: frontend: react+ material UI
 
 ```
 * nodejs >= 18.16.0
@@ -19,7 +19,4 @@
 * "eslint-plugin-react-refresh": "^0.3.4"
 
 "Learning new everyday not the copycat of yesterday!"
-
-"A bit of fragrance clings to the hand that gives flowers!"
-
-Thanks for watching!
+"Quan trọng: dnd-kit, drag and drop dragOverlay columns, cards !
