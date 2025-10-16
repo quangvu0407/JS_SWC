@@ -6,10 +6,11 @@ import {
   useSensor, useSensors,
   MouseSensor, TouchSensor,
   DragOverlay, defaultDropAnimationSideEffects,
-  closestCorners
+  closestCorners, rectIntersection, pointerWithin,
+  getFirstCollision, closestCenter
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cloneDeep } from 'lodash'
 
 import Column from './ListColumns/Column/Column'
@@ -36,6 +37,7 @@ const BoardContent = (props) => {
   const [activeDragItemType, setActiveDragItemType] = useState(null)
   const [activeDragItemData, setActiveDragItemData] = useState(null)
   const [oldColumnDragCard, setOldColumnDragCard] = useState(null)
+  const lastOverId = useRef(null)
 
   useEffect(() => {
     setOrderedColumns(mapOrder(board?.columns, board?.columnOrderIds, '_id'))
@@ -176,10 +178,41 @@ const BoardContent = (props) => {
       }
     })
   }
+
+  const collisionDetectionStratery = useCallback((args) => {
+    if (activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.COLUMN) {
+      return closestCorners({ ...args })
+    }
+    //tìm các điểm va chạm với con trỏ
+    const poiterIntersections = pointerWithin(args)
+    const intersections = !!poiterIntersections?.length
+      ? poiterIntersections
+      : rectIntersection(args)
+    //tìm OverId đầu tiên trong intersection
+    let overId = getFirstCollision(intersections, 'id')
+    if (overId) {
+      //fix nháy giữa 2 column đối với card có ảnh ban đầu
+      const checkColumn = orderedColumns.find(c => c._id === overId)
+      if (checkColumn) {
+        overId = closestCenter({
+          ...args,
+          droppableContainers: args.droppableContainers.filter(container => {
+            return container.id !== overId &&
+              checkColumn?.cardOrderIds?.includes(container.id)
+          })
+        })[0]?.id
+      }
+      lastOverId.current = overId
+      return [{ id: overId }]
+    }
+    //overId rỗng trả mảng rỗng
+    return lastOverId.current ? [{ id: lastOverId.current }] : []
+  }, [activeDragItemType, orderedColumns])
   return (
     <DndContext
       onDragStart={handleDragStart}
-      collisionDetection={closestCorners}
+      // collisionDetection={closestCorners}
+      collisionDetection={collisionDetectionStratery}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       sensors={sensors}>
