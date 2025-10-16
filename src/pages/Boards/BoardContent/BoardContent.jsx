@@ -11,10 +11,11 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, isEmpty } from 'lodash'
 
 import Column from './ListColumns/Column/Column'
 import Card from './ListColumns/Column/ListCards/Card/Card'
+import { generaPlaceholderCard } from '~/utils/formatters'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'ACTIVE_DRAG_ITEM_TYPE_COLUMN',
@@ -65,6 +66,10 @@ const BoardContent = (props) => {
         //loại bỏ card được di chuyển đi khỏi column hiện tại
         nextActiveColumn.cards = nextActiveColumn.cards.filter(c => c._id !== activeDraggingCardId)
 
+        if (isEmpty(nextActiveColumn.cards)) {
+          nextActiveColumn.cards = [generaPlaceholderCard(nextActiveColumn)]
+        }
+
         // cập nhật lại cardOrderIds
         nextActiveColumn.cardOrderIds = nextActiveColumn.cards.map(c => c._id)
       }
@@ -79,6 +84,9 @@ const BoardContent = (props) => {
         }
         // cập nhật lại cardOrderIds
         nextOverColumn.cards = nextOverColumn.cards.toSpliced(newCardIndex, 0, rebuild_activeDraggingData)
+
+        //Nếu hiện tại tồn tại card fake bên FE thì xóa đi, chỉ để card được over
+        nextOverColumn.cards = nextOverColumn.cards.filter(c => !c.FE_placeholderCard)
 
         // Cập nhật cardOrderIds tại column mới
         nextOverColumn.cardOrderIds = nextOverColumn.cards.map(c => c._id)
@@ -185,6 +193,10 @@ const BoardContent = (props) => {
     }
     //tìm các điểm va chạm với con trỏ
     const poiterIntersections = pointerWithin(args)
+
+    //check nếu rỗng poiterIntersections
+    if (!poiterIntersections?.length) return
+
     const intersections = !!poiterIntersections?.length
       ? poiterIntersections
       : rectIntersection(args)
@@ -194,7 +206,7 @@ const BoardContent = (props) => {
       //fix nháy giữa 2 column đối với card có ảnh ban đầu
       const checkColumn = orderedColumns.find(c => c._id === overId)
       if (checkColumn) {
-        overId = closestCenter({
+        overId = closestCorners({
           ...args,
           droppableContainers: args.droppableContainers.filter(container => {
             return container.id !== overId &&
