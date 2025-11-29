@@ -29,7 +29,7 @@ instace.interceptors.response.use(function (response) {
   // Do something with response error
   // console.log(">>> run error: ", error.response)
   return error && error.response && error.response.data
-    ? error.response.data : Promise.reject(error);
+    ? error.response.data : Promise.reject(error)
 })
 
 export default instace
