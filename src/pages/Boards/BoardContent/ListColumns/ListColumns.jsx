@@ -6,6 +6,7 @@ import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortabl
 import { useState } from 'react'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
+import { toast } from 'react-toastify'
 
 const ListColumns = (props) => {
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
@@ -15,7 +16,7 @@ const ListColumns = (props) => {
 
   const addNewColumn = () => {
     if (!newColumnTitle) {
-      // console.log('vui long nhap newColumnTitle')
+      toast.error('Please enter Column Title!')
       return
     }
 
