@@ -20,9 +20,10 @@ import ListCards from './ListCards/ListCards'
 import { mapOrder } from '~/utils/sorts'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Opacity } from '@mui/icons-material'
+// import { Opacity } from '@mui/icons-material'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
+import { toast } from 'react-toastify'
 
 const Column = ({ column }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -54,7 +55,9 @@ const Column = ({ column }) => {
   const [newCardTitle, setNewCardTitle] = useState('')
   const addNewCard = () => {
     if (!newCardTitle) {
-      // console.log('vui long nhap newCardTitle')
+      toast.error('Please enter Card Title!', {
+        position: 'bottom-right'
+      })
       return
     }
 
