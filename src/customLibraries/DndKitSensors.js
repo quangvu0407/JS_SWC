@@ -1,5 +1,5 @@
 import {
-  MouseSensor as DndKitbMouseSensor,
+  MouseSensor as DndKitMouseSensor,
   TouchSensor as DndKitTouchSensor
 } from '@dnd-kit/core'
 
@@ -15,10 +15,10 @@ const handler = ({ nativeEvent: event }) => {
   return true
 }
 
-export class MouseSensor extends DndKitTouchSensor {
+export class MouseSensor extends DndKitMouseSensor {
   static activators = [{ eventName: 'onMouseDown', handler }]
 }
 
-export class TouchSensor extends DndKitbMouseSensor {
+export class TouchSensor extends DndKitTouchSensor {
   static activators = [{ eventName: 'onTouchStart', handler }]
 }

@@ -7,26 +7,33 @@ import { useState } from 'react'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
+import { validateTitle } from '~/utils/validTitle'
 
-const ListColumns = (props) => {
+const ListColumns = ({ columns, createNewColumn, createNewCard }) => {
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
   const toggleOpenNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
 
   const [newColumnTitle, setNewColumnTitle] = useState('')
 
-  const addNewColumn = () => {
-    if (!newColumnTitle) {
-      toast.error('Please enter Column Title!')
+  const addNewColumn = async () => {
+    const errorMessage = validateTitle(newColumnTitle)
+    if (errorMessage) {
+      toast.error(errorMessage)
       return
     }
 
-    //Gọi API ở đây
+    //Tạo dữ liệu để gọi API
+    const newColumnData = {
+      title: newColumnTitle
+    }
+
+    await createNewColumn(newColumnData)
+
 
     toggleOpenNewColumnForm()
     setNewColumnTitle('')
   }
 
-  const { columns } = props
   return (
     <SortableContext items={columns?.map(c => c._id)} strategy={horizontalListSortingStrategy}>
       <Box sx={{
@@ -42,7 +49,7 @@ const ListColumns = (props) => {
           m: 2
         }
       }}>
-        {columns?.map(column => < Column key={column._id} column={column} />)}
+        {columns?.map(column => < Column key={column._id} column={column} createNewCard={createNewCard} />)}
         {/* add new column CTA */}
         {!openNewColumnForm ?
           <Box
