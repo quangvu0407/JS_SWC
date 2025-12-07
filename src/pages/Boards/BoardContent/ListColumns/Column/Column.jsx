@@ -24,8 +24,9 @@ import { CSS } from '@dnd-kit/utilities'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
+import { validateTitle } from '~/utils/validTitle'
 
-const Column = ({ column }) => {
+const Column = ({ column, createNewCard }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column._id,
     data: { ...column }
@@ -53,13 +54,21 @@ const Column = ({ column }) => {
   const toggleOpenNewCardForm = () => setOpenNewCardForm(!openNewCardForm)
 
   const [newCardTitle, setNewCardTitle] = useState('')
-  const addNewCard = () => {
-    if (!newCardTitle) {
-      toast.error('Please enter Card Title!', {
+  const addNewCard = async() => {
+    const errorMessage = validateTitle(newCardTitle)
+    if (errorMessage) {
+      toast.error(errorMessage, {
         position: 'bottom-right'
       })
       return
     }
+
+    const newCardData = {
+      title: newCardTitle,
+      columnId: column._id
+    }
+
+    await createNewCard(newCardData)
 
     //Gọi API ở đây
 
