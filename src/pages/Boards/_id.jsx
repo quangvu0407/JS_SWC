@@ -6,14 +6,25 @@ import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
 import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI } from '~/apis'
 import { toast } from 'react-toastify'
+import { generaPlaceholderCard } from '~/utils/formatters'
+import { isEmpty } from 'lodash'
 
 const Board = () => {
   const [board, setBoard] = useState(null)
+  //Tam thoi fix cung boardId
   const boardId = '692b144037ebfc9ccb5b1a58'
   useEffect(() => {
 
     // Call Api
     fetchBoardDetailsAPI(boardId).then((board) => {
+      //Xử lý kéo thả vào 1 column rỗng
+      board.columns.forEach(col => {
+        if (isEmpty(col.cards)) {
+          col.cards = [generaPlaceholderCard(col)]
+          col.cardOrderIds = [generaPlaceholderCard(col)._id]
+        }
+      })
+
       setBoard(board)
     })
   }, [])
@@ -25,9 +36,18 @@ const Board = () => {
     })
 
     if (createdColumn.statusCode) {
-      // console.log(createdColumn)
       toast.error(createdColumn.message)
     }
+
+    //Xử lý khi tạo column mới mà chưa có card thì tạo 1 card ảo bên fe
+    createdColumn.cards = [generaPlaceholderCard(createdColumn)]
+    createdColumn.cardOrderIds = [generaPlaceholderCard(createdColumn)._id]
+
+    //Cập nhật state Board
+    const newBoard = { ...board }
+    newBoard.columns.push(createdColumn)
+    newBoard.columnOrderIds.push(createdColumn._id)
+    setBoard(newBoard)
   }
 
   const createNewCard = async (newCardData) => {
@@ -40,6 +60,16 @@ const Board = () => {
       // console.log(createdColumn)
       toast.error(createdCard.message)
     }
+
+    //Cập nhật state Board
+    const newBoard = { ...board }
+    const columnToUpdate = newBoard.columns.find(c => c._id === createdCard.columnId)
+    if (columnToUpdate) {
+      columnToUpdate.cards.push(createdCard)
+      columnToUpdate.cardOrderIds.push(createdCard._id)
+    }
+    setBoard(newBoard)
+
   }
 
   return (
