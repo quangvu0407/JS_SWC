@@ -4,7 +4,7 @@ import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
-import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI } from '~/apis'
+import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI } from '~/apis'
 import { toast } from 'react-toastify'
 import { generaPlaceholderCard } from '~/utils/formatters'
 import { isEmpty } from 'lodash'
@@ -29,6 +29,7 @@ const Board = () => {
     })
   }, [])
 
+  //Gọi API tạo mới col và làm lại dữ liệu State Board
   const createNewColumn = async (newColumnData) => {
     const createdColumn = await createNewColumnAPI({
       ...newColumnData,
@@ -50,6 +51,7 @@ const Board = () => {
     setBoard(newBoard)
   }
 
+  //Gọi API tạo mới card và làm lại dữ liệu State Board
   const createNewCard = async (newCardData) => {
     const createdCard = await createNewCardnAPI({
       ...newCardData,
@@ -72,6 +74,19 @@ const Board = () => {
 
   }
 
+  //Gọi API, xử lý kéo thả column.
+  const moveColumn = async (dndOrderColumns) => {
+    const dndOrderColumnsIds = dndOrderColumns.map(c => c._id)
+
+    const newBoard = { ...board }
+    newBoard.columns = dndOrderColumns
+    newBoard.columnOrderIds = dndOrderColumnsIds
+    setBoard(newBoard)
+
+    //Gọi API update Board
+    await updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderColumnsIds })
+  }
+
   return (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh', backgroundColor: 'primary.contrastText' }}>
       <AppBar />
@@ -80,6 +95,7 @@ const Board = () => {
         board={board}
         createNewColumn={createNewColumn}
         createNewCard={createNewCard}
+        moveColumn={moveColumn}
       />
     </Container>
   )
