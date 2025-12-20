@@ -4,10 +4,12 @@ import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
-import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI } from '~/apis'
+import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from '~/apis'
 import { toast } from 'react-toastify'
 import { generaPlaceholderCard } from '~/utils/formatters'
 import { isEmpty } from 'lodash'
+import { mapOrder } from '~/utils/sorts'
+import { Box, CircularProgress, Typography } from '@mui/material'
 
 const Board = () => {
   const [board, setBoard] = useState(null)
@@ -17,14 +19,22 @@ const Board = () => {
 
     // Call Api
     fetchBoardDetailsAPI(boardId).then((board) => {
-      //Xử lý kéo thả vào 1 column rỗng
+      // sắp xếp thứ tự các col ở đâu trước khi đưa data xuống dưới, do BoardContent khi kéo thả 2 card thì nó xét vị trí dựa trên
+      // thứ tự trong mảng Cards, nhưng mảng card chx được sắp xếp mà chỉ hiển thị UI dựa trên vị trí id của cards
+      board.columns = mapOrder(board?.columns, board?.columnOrderIds, '_id')
+
       board.columns.forEach(col => {
+        //Xử lý kéo thả vào 1 column rỗng
         if (isEmpty(col.cards)) {
           col.cards = [generaPlaceholderCard(col)]
           col.cardOrderIds = [generaPlaceholderCard(col)._id]
         }
+        else {
+          // Nếu ko phải mảng rỗng thì sắp xếp cards theo cardOrderIds vì kéo thả dựa trên vị trí trong mảng cards
+          col.cards = mapOrder(col?.cards, col?.cardOrderIds, '_id')
+        }
       })
-
+      console.log('full board', board)
       setBoard(board)
     })
   }, [])
@@ -75,7 +85,7 @@ const Board = () => {
   }
 
   //Gọi API, xử lý kéo thả column.
-  const moveColumn = async (dndOrderColumns) => {
+  const moveColumn = (dndOrderColumns) => {
     const dndOrderColumnsIds = dndOrderColumns.map(c => c._id)
 
     const newBoard = { ...board }
@@ -84,7 +94,37 @@ const Board = () => {
     setBoard(newBoard)
 
     //Gọi API update Board
-    await updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderColumnsIds })
+    updateBoardDetailsAPI(newBoard._id, { columnOrderIds: dndOrderColumnsIds })
+  }
+
+  const moveCardInTheSameColumn = (dndOrderCards, dndOrderCardsIds, columnId) => {
+    // Update cho chuẩn dữ liệu Board
+    const newBoard = { ...board }
+    const columnToUpdate = newBoard.columns.find(col => col._id === columnId)
+    if (columnToUpdate) {
+      columnToUpdate.cards = dndOrderCards
+      columnToUpdate.cardOrderIds = dndOrderCardsIds
+    }
+    setBoard(newBoard)
+
+    //Gọi API update column
+    // updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderCardsIds })
+  }
+
+  if (!board) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        width: '100vw',
+        height: '100vh'
+      }}>
+        <CircularProgress />
+        <Typography>Loading Board...</Typography>
+      </Box >
+    )
   }
 
   return (
@@ -96,6 +136,7 @@ const Board = () => {
         createNewColumn={createNewColumn}
         createNewCard={createNewCard}
         moveColumn={moveColumn}
+        moveCardInTheSameColumn={moveCardInTheSameColumn}
       />
     </Container>
   )
