@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box'
 import ListColumns from './ListColumns/ListColumns'
-import { mapOrder } from '~/utils/sorts'
 import {
   DndContext,
   // PointerSensor,
@@ -25,7 +24,7 @@ const ACTIVE_DRAG_ITEM_TYPE = {
   CARD: 'ACTIVE_DRAG_ITEM_TYPE_CARD'
 }
 
-const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn }) => {
+const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn, moveCardInTheSameColumn }) => {
 
   // const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 10 } })
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } })
@@ -43,14 +42,17 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn }) => 
   const lastOverId = useRef(null)
 
   useEffect(() => {
-    setOrderedColumns(mapOrder(board?.columns, board?.columnOrderIds, '_id'))
+    setOrderedColumns(board.columns)
   }, [board])
 
   const findColumnByCardId = (cardId) => {
-    return orderedColumns.find(c => c.cards.map(card => card._id)?.includes(cardId))
+    return orderedColumns.find(c => c?.cards?.map(card => card._id)?.includes(cardId))
   }
 
-  const moveCardBetweenDifferentColumn = (overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData) => {
+  // Khởi tạo Function chung xử lý việc cập nhật lại state trong trường hợp di chuyển card giữa các column khác nhau
+  const moveCardBetweenDifferentColumn = (
+    overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData, triggerForm
+  ) => {
     setOrderedColumns(prevColumns => {
       const overCardIndex = overColumn?.cards?.findIndex(c => c._id === overCardId)
 
@@ -94,6 +96,10 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn }) => 
         nextOverColumn.cardOrderIds = nextOverColumn.cards.map(c => c._id)
       }
 
+      // if (triggerForm === 'handleDragEnd') {
+
+      // }
+
       return nextColumns
     })
   }
@@ -126,7 +132,7 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn }) => 
 
     if (!activeColumn || !overColumn) return
     if (activeColumn !== overColumn) {
-      moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData)
+      moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData, 'handDragOver')
     }
   }
 
@@ -147,20 +153,32 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn }) => 
       // columnId trong current ko thay đổi nên giữ mặc định ban đầu là column cũ, dù sau khi kéo thả( ví dụ từ column2 -> 3) thì nó vẫn
       // thuộc column2, trong active nó ko đổi data.current, chỉ tự set lại active.id, nếu muốn dùng activeDraggingData ta phải set lại id
       if (oldColumnDragCard._id !== overColumn._id) {
-        moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData)
+        moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData, 'handleDragEnd')
       }
       else {
         const oldCardIndex = oldColumnDragCard?.cards?.findIndex(c => c._id === activeDragItemId)
+        console.log(oldCardIndex)
         const newCardIndex = overColumn?.cards?.findIndex(c => c._id === overCardId)
+        console.log(newCardIndex)
 
+        //Dùng arraymove vì kéo card trong 1 cái column thì tương tự với logic kéo column trong 1 cái 
         const dndOrderCards = arrayMove(oldColumnDragCard?.cards, oldCardIndex, newCardIndex)
+
+        const dndOrderCardsIds = dndOrderCards.map(c => c._id)
         setOrderedColumns(prevColumns => {
           const nextColumns = cloneDeep(prevColumns)
+
+          //Tìm tới cái col mà ta đang thả
           const targetColumn = nextColumns.find(c => c._id === overColumn._id)
+
+          //Cập nhật lại Card và cardOrderIds tr
           targetColumn.cards = dndOrderCards
-          targetColumn.cardOrderIds = dndOrderCards.map(c => c._id)
+          targetColumn.cardOrderIds = dndOrderCardsIds
+
           return nextColumns
         })
+
+        moveCardInTheSameColumn(dndOrderCards, dndOrderCardsIds, oldColumnDragCard._id)
       }
 
     } if (activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.COLUMN) {
