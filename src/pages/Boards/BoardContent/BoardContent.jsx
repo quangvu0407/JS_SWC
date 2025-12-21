@@ -24,7 +24,7 @@ const ACTIVE_DRAG_ITEM_TYPE = {
   CARD: 'ACTIVE_DRAG_ITEM_TYPE_CARD'
 }
 
-const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn, moveCardInTheSameColumn }) => {
+const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn, moveCardInTheSameColumn, moveCardToDifferentColumn }) => {
 
   // const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 10 } })
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } })
@@ -96,9 +96,10 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn, moveC
         nextOverColumn.cardOrderIds = nextOverColumn.cards.map(c => c._id)
       }
 
-      // if (triggerForm === 'handleDragEnd') {
-
-      // }
+      if (triggerForm === 'handleDragEnd') {
+        // Gọi api
+        moveCardToDifferentColumn(activeDraggingCardId, oldColumnDragCard._id, nextOverColumn._id, nextColumns)
+      }
 
       return nextColumns
     })
@@ -132,7 +133,7 @@ const BoardContent = ({ board, createNewColumn, createNewCard, moveColumn, moveC
 
     if (!activeColumn || !overColumn) return
     if (activeColumn !== overColumn) {
-      moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData, 'handDragOver')
+      moveCardBetweenDifferentColumn(overColumn, overCardId, active, over, activeColumn, activeDraggingCardId, activeDraggingData, 'handleDragOver')
     }
   }
 
