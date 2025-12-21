@@ -4,7 +4,7 @@ import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
-import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI } from '~/apis'
+import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI, moveCardToDifferentColumnAPI } from '~/apis'
 import { toast } from 'react-toastify'
 import { generaPlaceholderCard } from '~/utils/formatters'
 import { isEmpty } from 'lodash'
@@ -77,9 +77,18 @@ const Board = () => {
     const newBoard = { ...board }
     const columnToUpdate = newBoard.columns.find(c => c._id === createdCard.columnId)
     if (columnToUpdate) {
-      columnToUpdate.cards.push(createdCard)
-      columnToUpdate.cardOrderIds.push(createdCard._id)
+
+      if (columnToUpdate.cards.some(card => card.FE_placeholderCard)) {
+        columnToUpdate.cards = [createdCard]
+        columnToUpdate.cardOrderIds = [createdCard._id]
+      }
+      else {
+        columnToUpdate.cards.push(createdCard)
+        columnToUpdate.cardOrderIds.push(createdCard._id)
+      }
+
     }
+    console.log(columnToUpdate)
     setBoard(newBoard)
 
   }
@@ -107,8 +116,29 @@ const Board = () => {
     }
     setBoard(newBoard)
 
-    //Gọi API update column
-    // updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderCardsIds })
+    // Gọi API update column
+    updateColumnDetailsAPI(columnId, { cardOrderIds: dndOrderCardsIds })
+  }
+
+  const moveCardToDifferentColumn = (currentCardId, prevColumnId, nextColumnId, dndOrderColumns) => {
+    const dndOrderColumnsIds = dndOrderColumns.map(c => c._id)
+
+    const newBoard = { ...board }
+    newBoard.columns = dndOrderColumns
+    newBoard.columnOrderIds = dndOrderColumnsIds
+    setBoard(newBoard)
+
+    let prevCardOrderIds = dndOrderColumns.find(c => c._id === prevColumnId)?.cardOrderIds
+    if (prevCardOrderIds[0].includes('placeholder-card')) prevCardOrderIds = []
+    // console.log(prevCardOrderIds)
+    // Gọi api xử lý backend
+    moveCardToDifferentColumnAPI({
+      currentCardId,
+      prevColumnId,
+      prevCardOrderIds,
+      nextColumnId,
+      nextCardOrderIds: dndOrderColumns.find(c => c._id === nextColumnId)?.cardOrderIds
+    })
   }
 
   if (!board) {
@@ -137,6 +167,7 @@ const Board = () => {
         createNewCard={createNewCard}
         moveColumn={moveColumn}
         moveCardInTheSameColumn={moveCardInTheSameColumn}
+        moveCardToDifferentColumn={moveCardToDifferentColumn}
       />
     </Container>
   )
