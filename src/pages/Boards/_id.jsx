@@ -4,7 +4,7 @@ import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
 import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
-import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI, moveCardToDifferentColumnAPI } from '~/apis'
+import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI, moveCardToDifferentColumnAPI, deleteColumnDetailsAPI } from '~/apis'
 import { toast } from 'react-toastify'
 import { generaPlaceholderCard } from '~/utils/formatters'
 import { isEmpty } from 'lodash'
@@ -34,7 +34,7 @@ const Board = () => {
           col.cards = mapOrder(col?.cards, col?.cardOrderIds, '_id')
         }
       })
-      console.log('full board', board)
+      // console.log('full board', board)
       setBoard(board)
     })
   }, [])
@@ -88,7 +88,7 @@ const Board = () => {
       }
 
     }
-    console.log(columnToUpdate)
+    // console.log(columnToUpdate)
     setBoard(newBoard)
 
   }
@@ -141,6 +141,17 @@ const Board = () => {
     })
   }
 
+  const deleteColumnDetails = (columnId) => {
+    // Update lại dữ liệu board
+    const newBoard = { ...board }
+    newBoard.columns = newBoard.columns.filter(c => c._id !== columnId)
+    newBoard.columnOrderIds = newBoard.columnOrderIds.filter(_id => _id !== columnId)
+    setBoard(newBoard)
+    deleteColumnDetailsAPI(columnId).then(res => {
+      toast.success(res?.deleteResult)
+    })
+  }
+
   if (!board) {
     return (
       <Box sx={{
@@ -168,6 +179,7 @@ const Board = () => {
         moveColumn={moveColumn}
         moveCardInTheSameColumn={moveCardInTheSameColumn}
         moveCardToDifferentColumn={moveCardToDifferentColumn}
+        deleteColumnDetails={deleteColumnDetails}
       />
     </Container>
   )

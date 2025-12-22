@@ -9,7 +9,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
 import { validateTitle } from '~/utils/validTitle'
 
-const ListColumns = ({ columns, createNewColumn, createNewCard }) => {
+const ListColumns = ({ columns, createNewColumn, createNewCard, deleteColumnDetails }) => {
   const [openNewColumnForm, setOpenNewColumnForm] = useState(false)
   const toggleOpenNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
 
@@ -49,7 +49,10 @@ const ListColumns = ({ columns, createNewColumn, createNewCard }) => {
           m: 2
         }
       }}>
-        {columns?.map(column => < Column key={column._id} column={column} createNewCard={createNewCard} />)}
+        {columns?.map(column => < Column key={column._id} column={column}
+          createNewCard={createNewCard}
+          deleteColumnDetails={deleteColumnDetails}
+        />)}
         {/* add new column CTA */}
         {!openNewColumnForm ?
           <Box
