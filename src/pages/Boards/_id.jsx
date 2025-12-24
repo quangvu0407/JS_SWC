@@ -2,7 +2,6 @@ import Container from '@mui/material/Container'
 import AppBar from '~/components/AppBar/AppBar'
 import BoardBar from './BoardBar/BoardBar'
 import BoardContent from './BoardContent/BoardContent'
-import { mockData } from '~/apis/mock-data'
 import { useEffect, useState } from 'react'
 import { fetchBoardDetailsAPI, createNewColumnAPI, createNewCardnAPI, updateBoardDetailsAPI, updateColumnDetailsAPI, moveCardToDifferentColumnAPI, deleteColumnDetailsAPI } from '~/apis'
 import { toast } from 'react-toastify'
@@ -11,8 +10,13 @@ import { isEmpty } from 'lodash'
 import { mapOrder } from '~/utils/sorts'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
+// Redux
+import { useDispatch, useSelector } from 'react-redux'
+import { setBoard } from '~/redux/slices/boardSlice'
+
 const Board = () => {
-  const [board, setBoard] = useState(null)
+  const dispatch = useDispatch()
+  const board = useSelector(state => state.board.board)
   //Tam thoi fix cung boardId
   const boardId = '692b144037ebfc9ccb5b1a58'
   useEffect(() => {
@@ -35,7 +39,7 @@ const Board = () => {
         }
       })
       // console.log('full board', board)
-      setBoard(board)
+      dispatch(setBoard(board))
     })
   }, [])
 

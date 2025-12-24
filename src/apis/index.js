@@ -42,3 +42,11 @@ export const createNewCardnAPI = async (newColumnData) => {
   const response = await axios.post('/v1/cards', newColumnData)
   return response
 }
+
+//update Card Title
+
+export const updateCardTitleAPI = async(cardId, updateData) => {
+  const response = await axios.put(`/v1/cards/${cardId}`, updateData)
+
+  return response
+}
